@@ -38,9 +38,9 @@ public class SparkGpuExample {
         Nd4j.MAX_SLICES_TO_PRINT = Integer.MAX_VALUE;
         System.out.println("Running on " + ContextHolder.getInstance().deviceNum() + " devices");
         // set to test mode
-        SparkConf sparkConf = new SparkConf()
+        SparkConf sparkConf = new SparkConf().set("spark.executor.memory","5g").set("spark.driver.memory","5g")
                 .setMaster("local[8]").set(SparkDl4jMultiLayer.AVERAGE_EACH_ITERATION,"false")
-                .set("spark.akka.frameSize", "100")
+                .set("spark.akka.frameSize", "1000")
                 .setAppName("mnist");
 
         System.out.println("Setting up Spark Context...");
