@@ -21,6 +21,7 @@ import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.jcublas.context.ContextHolder;
 import org.nd4j.linalg.jcublas.kernel.KernelFunctionLoader;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
@@ -35,6 +36,7 @@ public class SparkGpuExample {
     public static void main(String[] args) throws Exception {
         Nd4j.MAX_ELEMENTS_PER_SLICE = Integer.MAX_VALUE;
         Nd4j.MAX_SLICES_TO_PRINT = Integer.MAX_VALUE;
+        System.out.println("Running on " + ContextHolder.getInstance().deviceNum() + " devices");
         // set to test mode
         SparkConf sparkConf = new SparkConf()
                 .setMaster("local[8]").set(SparkDl4jMultiLayer.AVERAGE_EACH_ITERATION,"false")
