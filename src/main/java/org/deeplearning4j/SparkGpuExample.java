@@ -15,6 +15,7 @@ import org.deeplearning4j.spark.impl.layer.SparkDl4jLayer;
 import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
 
 /**
  * @author sonali
@@ -30,10 +31,18 @@ public class SparkGpuExample {
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .lossFunction(LossFunctions.LossFunction.MCXENT).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .activationFunction("softmax").constrainGradientToUnitNorm(true).dropOut(0.5).useDropConnect(true)
-                .iterations(10).weightInit(WeightInit.XAVIER)
-                .learningRate(1e-1).nIn(4).nOut(3).layer(new org.deeplearning4j.nn.conf.layers.OutputLayer()).build();
+                .constrainGradientToUnitNorm(true).useDropConnect(true)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .iterations(10)
+                .learningRate(1e-1)
+                .layer(new org.deeplearning4j.nn.conf.layers.OutputLayer.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .dropOut(0.5)
+                        .lossFunction(LossFunctions.LossFunction.MCXENT)
+                                //.activationFunction("softmax")
+                        .nIn(4).nOut(3)
+                        .build())
+                .build();
 
         System.out.println("Initializing network");
         SparkDl4jLayer master = new SparkDl4jLayer(sc,conf);

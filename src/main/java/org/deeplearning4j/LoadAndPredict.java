@@ -5,6 +5,7 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -26,21 +27,41 @@ public class LoadAndPredict {
 
     public static void main(String[] args) throws Exception {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(784)
-                .nOut(10)
-                .weightInit(WeightInit.XAVIER)
                 .seed(123)
                 .constrainGradientToUnitNorm(true)
-                .iterations(5).activationFunction("identity")
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                .iterations(5)
                 .learningRate(1e-1f).batchSize(1000)
                 .momentum(0.5).constrainGradientToUnitNorm(true)
                 .momentumAfter(Collections.singletonMap(3, 0.9))
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list(4)
-                .hiddenLayerSizes(new int[]{600, 250, 200})
-                .override(3, new ClassifierOverride())
+                .layer(0, new RBM.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        //.activationFunction("identity")
+                        .nIn(784)
+                        .nOut(600)
+                        .build())
+                .layer(1, new RBM.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(600)
+                        .nOut(250)
+                        .build())
+                .layer(2, new RBM.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(250)
+                        .nOut(200)
+                        .build())
+                .layer(3, new OutputLayer.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .nIn(200)
+                        .nOut(10)
+                        .build())
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);

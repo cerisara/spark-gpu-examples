@@ -47,28 +47,44 @@ public class SparkMnistExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(784)
-                .nOut(10)
-                .weightInit(WeightInit.XAVIER)
                 .seed(123)
                 .constrainGradientToUnitNorm(true)
-                .iterations(5).activationFunction("softplus")
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f).batchSize(1000)
+                .iterations(5)
                 .momentum(0.5).constrainGradientToUnitNorm(true)
                 .momentumAfter(Collections.singletonMap(3, 0.9)).l1(0.3).l2(1e-3).regularization(true)
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                .list(4).backward(true)
-                .hiddenLayerSizes(600, 250, 200)
-                .override(3, new ConfOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
-                        builder.layer(new OutputLayer());
-                        builder.activationFunction("softmax");
-                    }
-                })
+                .learningRate(1e-1f).batchSize(1000)
+                .list(4)
+                .layer(0, new RBM.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(784)
+                        .nOut(600)
+                        .build())
+                .layer(1, new RBM.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(600)
+                        .nOut(500)
+                        .build())
+                .layer(2, new RBM.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(500)
+                        .nOut(400)
+                        .build())
+                .layer(3, new OutputLayer.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                                //.activationFunction("softmax")
+                        .nIn(400)
+                        .nOut(10)
+                        .build())
+                .pretrain(true).backprop(true)
+                //.activationFunction("softplus")
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);

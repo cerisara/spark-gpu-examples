@@ -25,6 +25,7 @@ import org.canova.api.records.writer.impl.LineRecordWriter;
 import org.canova.api.split.FileSplit;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.spark.impl.layer.SparkDl4jLayer;
 import org.deeplearning4j.spark.util.MLLibUtil;
@@ -113,12 +114,16 @@ public class LogisticRegressionComparison {
         System.out.println("F1 = " + precision);
 
         NeuralNetConfiguration neuralNetConfiguration = new NeuralNetConfiguration.Builder()
-                .lossFunction(LossFunctions.LossFunction.MCXENT).
-                        optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                .activationFunction("softmax")
-                .iterations(10).weightInit(WeightInit.XAVIER)
-                .learningRate(1e-1).nIn(4).nOut(3).layer(new org.deeplearning4j.nn.conf.layers.OutputLayer()).build();
-
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
+                .iterations(10)
+                .learningRate(1e-1)
+                .layer(new org.deeplearning4j.nn.conf.layers.OutputLayer.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .lossFunction(LossFunctions.LossFunction.MCXENT)
+                        //.activationFunction("softmax")
+                        .nIn(4).nOut(3)
+                        .build())
+                .build();
 
         System.out.println("Initializing network");
         final SparkDl4jLayer master = new SparkDl4jLayer(sc,neuralNetConfiguration);

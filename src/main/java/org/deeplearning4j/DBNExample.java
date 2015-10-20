@@ -7,6 +7,8 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.layers.factory.LayerFactories;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -33,11 +35,36 @@ public class DBNExample {
     public static void main(String[] args) throws Exception {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .weightInit(WeightInit.VI).optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                .iterations(5).layer(new RBM())
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f).nIn(784).nOut(10).list(4)
-                .hiddenLayerSizes(600, 500, 400)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
+                .iterations(5)
+                .list(4)
+                .layer(0, new RBM.Builder()
+                        .weightInit(WeightInit.VI)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(784)
+                        .nOut(600)
+                        .build())
+                .layer(1, new RBM.Builder()
+                        .weightInit(WeightInit.VI)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(600)
+                        .nOut(500)
+                        .build())
+                .layer(2, new RBM.Builder()
+                        .weightInit(WeightInit.VI)
+                        .learningRate(1e-1f)
+                        .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(500)
+                        .nOut(400)
+                        .build())
+                .layer(3, new OutputLayer.Builder()
+                        .weightInit(WeightInit.VI)
+                        .nIn(400)
+                        .nOut(10)
+                        .build())
+                .pretrain(true).backprop(false)
                 .build();
 
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
